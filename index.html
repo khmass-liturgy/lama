@@ -1,1 +1,1803 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>산란계 농장 영업관리 시스템</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0ede6;
+    --surface: #faf8f4;
+    --card: #ffffff;
+    --border: #ddd9cf;
+    --border-strong: #c5c0b4;
+    --text: #1a1814;
+    --text-2: #5a5650;
+    --text-3: #8c8880;
+    --accent: #2d6a4f;
+    --accent-light: #e8f5ee;
+    --accent-2: #d4870a;
+    --accent-2-light: #fff4e0;
+    --danger: #c0392b;
+    --danger-light: #fdf0ee;
+    --info: #1a5f8a;
+    --info-light: #e8f3fb;
+    --warning: #7a5c00;
+    --warning-light: #fffaeb;
+    --purple: #5b3ea6;
+    --purple-light: #f0ecfb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+  .app-shell { display: flex; min-height: 100vh; }
 
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    background: var(--text);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+  }
+  .logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .logo-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #9fd3b5;
+    text-transform: uppercase;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 3px;
+  }
+  .nav { padding: 12px 0; flex: 1; }
+  .nav-section {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.3);
+    padding: 14px 20px 6px;
+    text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+    font-weight: 400;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  .nav-item.active {
+    background: rgba(159,211,181,0.15);
+    color: #9fd3b5;
+    border-right: 2px solid #9fd3b5;
+    font-weight: 500;
+  }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* Main */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar-left h1 { font-size: 18px; font-weight: 700; }
+  .topbar-left p { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .badge-date {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    background: var(--card);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Noto Sans KR', sans-serif;
+    text-decoration: none;
+  }
+  .btn:hover { background: var(--bg); border-color: var(--text-3); }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: #235840; border-color: #235840; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .btn-danger:hover { background: #a93226; }
+  .btn-warning { background: var(--accent-2); color: #fff; border-color: var(--accent-2); }
+  .btn-warning:hover { background: #b8770a; }
+
+  .content { padding: 24px 28px; flex: 1; }
+
+  /* Pages */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Stats Row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .stat-label { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-value { font-size: 26px; font-weight: 700; margin-top: 6px; font-family: 'IBM Plex Mono', monospace; }
+  .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+  .stat-card.green .stat-value { color: var(--accent); }
+  .stat-card.orange .stat-value { color: var(--accent-2); }
+  .stat-card.red .stat-value { color: var(--danger); }
+  .stat-card.blue .stat-value { color: var(--info); }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title { font-size: 14px; font-weight: 700; }
+  .card-body { padding: 20px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  /* Form */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 600; color: var(--text-2); }
+  input, select, textarea {
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* Tags/Badges */
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .tag-green { background: var(--accent-light); color: var(--accent); }
+  .tag-orange { background: var(--accent-2-light); color: var(--accent-2); }
+  .tag-red { background: var(--danger-light); color: var(--danger); }
+  .tag-blue { background: var(--info-light); color: var(--info); }
+  .tag-purple { background: var(--purple-light); color: var(--purple); }
+  .tag-gray { background: var(--bg); color: var(--text-2); }
+
+  /* Grid layout */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,24,20,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: 12px;
+    width: 560px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; }
+  .modal-close {
+    width: 30px; height: 30px;
+    border: none;
+    background: var(--bg);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-2);
+    transition: background 0.15s;
+  }
+  .modal-close:hover { background: var(--border); }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  /* Egg price chart */
+  .price-chart {
+    height: 160px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 10px 0 0;
+    border-bottom: 2px solid var(--border);
+    position: relative;
+  }
+  .price-bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    gap: 4px;
+  }
+  .price-bar {
+    width: 100%;
+    background: var(--accent-light);
+    border: 1px solid var(--accent);
+    border-radius: 3px 3px 0 0;
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+  }
+  .price-bar:hover { background: var(--accent); }
+  .price-bar:hover .price-tooltip {
+    display: block;
+  }
+  .price-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 105%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 10;
+  }
+  .price-label { font-size: 10px; color: var(--text-3); }
+
+  /* SMS preview */
+  .sms-preview {
+    background: #f0f0f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: #1a1a1a;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+  }
+  .sms-bubble-wrap {
+    background: #e9e9e9;
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 120px;
+  }
+  .sms-bubble {
+    background: #fff;
+    border-radius: 0 12px 12px 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 85%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .sms-sender {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-bottom: 6px;
+  }
+
+  /* Farm detail */
+  .farm-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .farm-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .farm-card:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(45,106,79,0.08); }
+  .farm-card-name { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .farm-card-meta { display: flex; flex-direction: column; gap: 4px; }
+  .farm-meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+  .farm-meta-row span:last-child { font-weight: 500; color: var(--text); }
+
+  /* Disease alert */
+  .alert-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  .alert-item.danger { background: var(--danger-light); border: 1px solid #f5bbb7; }
+  .alert-item.warning { background: var(--warning-light); border: 1px solid #fdeaa0; }
+  .alert-item.info { background: var(--info-light); border: 1px solid #b5d4f4; }
+  .alert-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .alert-content h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .alert-content p { font-size: 12px; line-height: 1.6; color: var(--text-2); }
+  .alert-date { font-size: 10px; color: var(--text-3); margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
+
+  /* Search */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .search-input-wrap { position: relative; flex: 1; }
+  .search-input-wrap input { padding-left: 34px; }
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: var(--text-3);
+    pointer-events: none;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .tab {
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .timeline-item { position: relative; margin-bottom: 16px; }
+  .timeline-dot {
+    position: absolute;
+    left: -21px;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--card);
+  }
+  .timeline-date { font-size: 11px; color: var(--text-3); font-family: 'IBM Plex Mono', monospace; }
+  .timeline-text { font-size: 13px; margin-top: 2px; }
+
+  /* Responsive helpers */
+  .flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .gap-8 { gap: 8px; }
+  .gap-10 { gap: 10px; }
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .text-muted { color: var(--text-3); font-size: 12px; }
+  .font-mono { font-family: 'IBM Plex Mono', monospace; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="logo">
+      <div class="logo-title">🐔 산란계 영업관리</div>
+      <div class="logo-sub">Feed Sales Manager v1.0</div>
+    </div>
+    <div class="nav">
+      <div class="nav-section">주요 메뉴</div>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span class="nav-icon">🏠</span> 대시보드
+      </div>
+      <div class="nav-item" onclick="showPage('farms')">
+        <span class="nav-icon">🏡</span> 농장 관리
+      </div>
+      <div class="nav-section">영업 정보</div>
+      <div class="nav-item" onclick="showPage('feed')">
+        <span class="nav-icon">🌾</span> 사료 가격 관리
+      </div>
+      <div class="nav-item" onclick="showPage('egg')">
+        <span class="nav-icon">🥚</span> 난가 정보
+      </div>
+      <div class="nav-item" onclick="showPage('sms')">
+        <span class="nav-icon">💬</span> 문자 발송
+      </div>
+      <div class="nav-section">정보 관리</div>
+      <div class="nav-item" onclick="showPage('disease')">
+        <span class="nav-icon">🦠</span> 질병 정보
+      </div>
+      <div class="nav-item" onclick="showPage('memo')">
+        <span class="nav-icon">📋</span> 기타 메모
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      영업담당: 홍길동 사원<br>
+      경기북부 담당구역
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 id="page-title">대시보드</h1>
+        <p id="page-desc">전체 농장 현황 및 주요 알림</p>
+      </div>
+      <div class="topbar-right">
+        <span class="badge-date" id="today-date"></span>
+        <button class="btn btn-primary btn-sm" onclick="openModal('farm-modal')">＋ 농장 추가</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- 대시보드 -->
+      <div id="page-dashboard" class="page active">
+        <div class="stats-row">
+          <div class="stat-card green">
+            <div class="stat-label">관리 농장 수</div>
+            <div class="stat-value">12</div>
+            <div class="stat-sub">총 산란계 340,000수</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-label">이번달 납품 예정</div>
+            <div class="stat-value">18톤</div>
+            <div class="stat-sub">평균 1.5톤/농장</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label">질병 알림</div>
+            <div class="stat-value">2건</div>
+            <div class="stat-sub">AI 위험지역 인근</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">현재 난가 (특란)</div>
+            <div class="stat-value">1,120원</div>
+            <div class="stat-sub">▲ 전주 대비 +40원</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <!-- 최근 방문 예정 -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📅 이번 주 방문 예정</span>
+              <button class="btn btn-sm" onclick="showPage('farms')">전체보기</button>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>농장명</th>
+                    <th>방문일</th>
+                    <th>목적</th>
+                    <th>상태</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><b>청계 농장</b></td>
+                    <td class="font-mono" style="font-size:12px;">06/10</td>
+                    <td>사료 납품</td>
+                    <td><span class="tag tag-green">예정</span></td>
+                  </tr>
+                  <tr>
+                    <td><b>삼성 농장</b></td>
+                    <td class="font-mono" style="font-size:12px;">06/11</td>
+                    <td>계약 갱신</td>
+                    <td><span class="tag tag-orange">중요</span></td>
+                  </tr>
+                  <tr>
+                    <td><b>하늘 농장</b></td>
+                    <td class="font-mono" style="font-size:12px;">06/12</td>
+                    <td>클레임 처리</td>
+                    <td><span class="tag tag-red">긴급</span></td>
+                  </tr>
+                  <tr>
+                    <td><b>대광 농장</b></td>
+                    <td class="font-mono" style="font-size:12px;">06/14</td>
+                    <td>신제품 소개</td>
+                    <td><span class="tag tag-blue">예정</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 질병 알림 -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🚨 질병 & 긴급 알림</span>
+              <button class="btn btn-sm" onclick="showPage('disease')">전체보기</button>
+            </div>
+            <div class="card-body">
+              <div class="alert-item danger">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                  <h4>조류인플루엔자(AI) 주의</h4>
+                  <p>경기 북부 지역 AI 발생 인근 농가 방역 강화 권고</p>
+                  <div class="alert-date">2025-06-07 농림부 공고</div>
+                </div>
+              </div>
+              <div class="alert-item warning">
+                <div class="alert-icon">🌡️</div>
+                <div class="alert-content">
+                  <h4>고온 스트레스 주의보</h4>
+                  <p>이번 주 낮 기온 34°C 이상 예보. 음수량 및 환기 관리 필수</p>
+                  <div class="alert-date">2025-06-08 기상청</div>
+                </div>
+              </div>
+              <div class="alert-item info">
+                <div class="alert-icon">💊</div>
+                <div class="alert-content">
+                  <h4>뉴캐슬병 예방접종 시기</h4>
+                  <p>6월 중 뉴캐슬병 예방접종 일정 확인 및 농가 안내 권장</p>
+                  <div class="alert-date">2025-06-05</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 난가 트렌드 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🥚 최근 난가 동향 (특란 기준, 원/개)</span>
+            <span class="tag tag-green">▲ 상승세</span>
+          </div>
+          <div class="card-body">
+            <div class="price-chart" id="egg-chart">
+            </div>
+            <div style="display:flex; justify-content:space-around; margin-top:6px;">
+              <span class="price-label">5/12</span>
+              <span class="price-label">5/19</span>
+              <span class="price-label">5/26</span>
+              <span class="price-label">6/02</span>
+              <span class="price-label">6/08</span>
+            </div>
+            <div style="margin-top:16px; display:flex; gap:24px; flex-wrap:wrap;">
+              <div><span class="text-muted">특란:</span> <b>1,120원</b></div>
+              <div><span class="text-muted">대란:</span> <b>1,040원</b></div>
+              <div><span class="text-muted">중란:</span> <b>920원</b></div>
+              <div><span class="text-muted">소란:</span> <b>800원</b></div>
+              <div><span class="text-muted">왕란:</span> <b>1,280원</b></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 최근 문자 발송 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">💬 최근 문자 발송 내역</span>
+            <button class="btn btn-sm" onclick="showPage('sms')">문자 발송</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>발송일시</th>
+                  <th>대상</th>
+                  <th>내용</th>
+                  <th>상태</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="font-mono" style="font-size:11px;">06/08 09:30</td>
+                  <td>전체 12농장</td>
+                  <td style="color:var(--text-2)">AI 주의 및 방역 강화 안내</td>
+                  <td><span class="tag tag-green">발송완료</span></td>
+                </tr>
+                <tr>
+                  <td class="font-mono" style="font-size:11px;">06/07 15:00</td>
+                  <td>청계·삼성·대광 농장</td>
+                  <td style="color:var(--text-2)">6월 사료 가격 인하 안내</td>
+                  <td><span class="tag tag-green">발송완료</span></td>
+                </tr>
+                <tr>
+                  <td class="font-mono" style="font-size:11px;">06/05 10:00</td>
+                  <td>전체 12농장</td>
+                  <td style="color:var(--text-2)">이번 주 난가 안내 (특란 1,080원)</td>
+                  <td><span class="tag tag-green">발송완료</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 농장 관리 -->
+      <div id="page-farms" class="page">
+        <div class="search-bar">
+          <div class="search-input-wrap" style="flex:1;">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="farm-search" placeholder="농장명, 대표자명, 지역 검색..." oninput="filterFarms(this.value)">
+          </div>
+          <select style="width:140px;" id="farm-filter">
+            <option value="">전체 지역</option>
+            <option value="경기">경기</option>
+            <option value="충남">충남</option>
+            <option value="충북">충북</option>
+          </select>
+          <button class="btn btn-primary" onclick="openModal('farm-modal')">＋ 농장 추가</button>
+        </div>
+
+        <div class="farm-list" id="farm-list">
+          <!-- JS로 렌더링 -->
+        </div>
+      </div>
+
+      <!-- 사료 가격 관리 -->
+      <div id="page-feed" class="page">
+        <div class="two-col" style="margin-bottom:20px;">
+          <!-- 현재 사료 가격표 -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📋 현재 사료 가격표</span>
+              <span class="tag tag-blue font-mono" style="font-size:11px;">2025년 6월 기준</span>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>제품명</th>
+                    <th>규격</th>
+                    <th style="text-align:right;">단가 (원/kg)</th>
+                    <th style="text-align:right;">변동</th>
+                  </tr>
+                </thead>
+                <tbody id="feed-price-table">
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 가격 변동 이력 -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📈 가격 변동 이력</span>
+            </div>
+            <div class="card-body">
+              <div class="timeline" id="feed-timeline">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 농장별 계약 단가 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🏡 농장별 계약 단가 관리</span>
+            <button class="btn btn-sm btn-primary" onclick="openModal('price-modal')">단가 조정</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>농장명</th>
+                  <th>사료 종류</th>
+                  <th style="text-align:right;">계약 단가</th>
+                  <th style="text-align:right;">정가 대비</th>
+                  <th>계약 만료</th>
+                  <th>비고</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>청계 농장</b></td>
+                  <td>초기산란 / 산란피크</td>
+                  <td style="text-align:right;" class="font-mono">420원</td>
+                  <td style="text-align:right;"><span class="tag tag-orange">-5원</span></td>
+                  <td class="font-mono" style="font-size:12px;">2025-12-31</td>
+                  <td class="text-muted">대량 장기계약</td>
+                </tr>
+                <tr>
+                  <td><b>삼성 농장</b></td>
+                  <td>산란피크 / 후기산란</td>
+                  <td style="text-align:right;" class="font-mono">425원</td>
+                  <td style="text-align:right;"><span class="tag tag-gray">정가</span></td>
+                  <td class="font-mono" style="font-size:12px;">2025-09-30</td>
+                  <td class="text-muted">갱신 협의 필요</td>
+                </tr>
+                <tr>
+                  <td><b>하늘 농장</b></td>
+                  <td>초기산란</td>
+                  <td style="text-align:right;" class="font-mono">418원</td>
+                  <td style="text-align:right;"><span class="tag tag-orange">-7원</span></td>
+                  <td class="font-mono" style="font-size:12px;">2026-03-31</td>
+                  <td class="text-muted">클레임 조정분</td>
+                </tr>
+                <tr>
+                  <td><b>대광 농장</b></td>
+                  <td>산란피크</td>
+                  <td style="text-align:right;" class="font-mono">427원</td>
+                  <td style="text-align:right;"><span class="tag tag-blue">+2원</span></td>
+                  <td class="font-mono" style="font-size:12px;">2025-06-30</td>
+                  <td class="text-muted">소량 거래</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 난가 정보 -->
+      <div id="page-egg" class="page">
+        <div class="stats-row">
+          <div class="stat-card green">
+            <div class="stat-label">특란 (67g 이상)</div>
+            <div class="stat-value">1,120원</div>
+            <div class="stat-sub font-mono">▲ +40 (전주)</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">대란 (60~67g)</div>
+            <div class="stat-value">1,040원</div>
+            <div class="stat-sub font-mono">▲ +30 (전주)</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-label">중란 (52~60g)</div>
+            <div class="stat-value">920원</div>
+            <div class="stat-sub font-mono">▼ -10 (전주)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">왕란 (68g 이상)</div>
+            <div class="stat-value" style="font-size:22px;">1,280원</div>
+            <div class="stat-sub font-mono">▲ +50 (전주)</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🗓️ 난가 등록 / 수정</span>
+            </div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>기준일</label>
+                  <input type="date" id="egg-date">
+                </div>
+                <div class="form-group">
+                  <label>출처</label>
+                  <select>
+                    <option>서울 양계농협</option>
+                    <option>대한양계협회</option>
+                    <option>자체 조사</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>왕란 (원/개)</label>
+                  <input type="number" placeholder="1280">
+                </div>
+                <div class="form-group">
+                  <label>특란 (원/개)</label>
+                  <input type="number" placeholder="1120">
+                </div>
+                <div class="form-group">
+                  <label>대란 (원/개)</label>
+                  <input type="number" placeholder="1040">
+                </div>
+                <div class="form-group">
+                  <label>중란 (원/개)</label>
+                  <input type="number" placeholder="920">
+                </div>
+                <div class="form-group">
+                  <label>소란 (원/개)</label>
+                  <input type="number" placeholder="800">
+                </div>
+                <div class="form-group">
+                  <label>비고</label>
+                  <input type="text" placeholder="특이사항 입력">
+                </div>
+              </div>
+              <div style="margin-top:16px; display:flex; gap:8px;">
+                <button class="btn btn-primary" style="flex:1;">난가 저장</button>
+                <button class="btn" onclick="sendEggSMS()">📩 전체 농장 문자 발송</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📊 난가 이력 (최근 10주)</span>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>기준일</th>
+                    <th style="text-align:right;">특란</th>
+                    <th style="text-align:right;">대란</th>
+                    <th style="text-align:right;">중란</th>
+                    <th style="text-align:right;">변동</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td class="font-mono" style="font-size:11px;">06/08</td><td style="text-align:right;">1,120</td><td style="text-align:right;">1,040</td><td style="text-align:right;">920</td><td style="text-align:right;"><span class="tag tag-green">▲+40</span></td></tr>
+                  <tr><td class="font-mono" style="font-size:11px;">06/01</td><td style="text-align:right;">1,080</td><td style="text-align:right;">1,010</td><td style="text-align:right;">930</td><td style="text-align:right;"><span class="tag tag-green">▲+20</span></td></tr>
+                  <tr><td class="font-mono" style="font-size:11px;">05/25</td><td style="text-align:right;">1,060</td><td style="text-align:right;">990</td><td style="text-align:right;">890</td><td style="text-align:right;"><span class="tag tag-red">▼-30</span></td></tr>
+                  <tr><td class="font-mono" style="font-size:11px;">05/18</td><td style="text-align:right;">1,090</td><td style="text-align:right;">1,010</td><td style="text-align:right;">910</td><td style="text-align:right;"><span class="tag tag-gray">±0</span></td></tr>
+                  <tr><td class="font-mono" style="font-size:11px;">05/11</td><td style="text-align:right;">1,090</td><td style="text-align:right;">1,010</td><td style="text-align:right;">920</td><td style="text-align:right;"><span class="tag tag-green">▲+50</span></td></tr>
+                  <tr><td class="font-mono" style="font-size:11px;">05/04</td><td style="text-align:right;">1,040</td><td style="text-align:right;">960</td><td style="text-align:right;">860</td><td style="text-align:right;"><span class="tag tag-red">▼-20</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 문자 발송 -->
+      <div id="page-sms" class="page">
+        <div class="two-col">
+          <div>
+            <!-- 수신 대상 선택 -->
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-header">
+                <span class="card-title">📤 수신 대상 선택</span>
+                <div style="display:flex; gap:6px;">
+                  <button class="btn btn-sm" onclick="selectAllFarms(true)">전체선택</button>
+                  <button class="btn btn-sm" onclick="selectAllFarms(false)">전체해제</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="sms-farm-list" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;">
+                </div>
+              </div>
+            </div>
+
+            <!-- 문자 작성 -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">✏️ 문자 내용 작성</span>
+              </div>
+              <div class="card-body">
+                <div class="form-group" style="margin-bottom:12px;">
+                  <label>템플릿 선택</label>
+                  <select onchange="loadSmsTemplate(this.value)">
+                    <option value="">— 직접 작성 —</option>
+                    <option value="egg">난가 안내</option>
+                    <option value="feed">사료 가격 안내</option>
+                    <option value="disease">질병 경보</option>
+                    <option value="visit">방문 일정 안내</option>
+                    <option value="weather">고온 주의</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>발신 번호</label>
+                  <input type="text" value="010-1234-5678" readonly style="background:var(--bg); color:var(--text-3);">
+                </div>
+                <div class="form-group" style="margin-top:10px;">
+                  <label>메시지 내용</label>
+                  <textarea id="sms-content" rows="7" oninput="updateSmsPreview()" placeholder="문자 내용을 입력하세요..."></textarea>
+                  <div style="text-align:right; font-size:11px; color:var(--text-3); margin-top:3px;">
+                    <span id="sms-char-count">0</span>/90자 (초과시 장문 자동 전환)
+                  </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%; margin-top:4px;" onclick="sendSMS()">
+                  📩 선택 농장에 문자 발송
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <!-- 미리보기 -->
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-header">
+                <span class="card-title">📱 미리보기</span>
+              </div>
+              <div class="card-body">
+                <div class="sms-bubble-wrap">
+                  <div class="sms-sender">사료회사 홍길동</div>
+                  <div class="sms-bubble">
+                    <div id="sms-preview-text" style="white-space:pre-wrap; color:var(--text);">여기에 미리보기가 표시됩니다.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 발송 이력 -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">📜 발송 이력</span>
+              </div>
+              <div class="card-body" style="padding:0; max-height:360px; overflow-y:auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>발송일시</th>
+                      <th>건수</th>
+                      <th>내용</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sms-history">
+                    <tr>
+                      <td class="font-mono" style="font-size:11px;">06/08 09:30</td>
+                      <td><span class="tag tag-blue">12건</span></td>
+                      <td style="font-size:12px; color:var(--text-2);">AI 주의 방역 강화 안내</td>
+                    </tr>
+                    <tr>
+                      <td class="font-mono" style="font-size:11px;">06/07 15:00</td>
+                      <td><span class="tag tag-blue">3건</span></td>
+                      <td style="font-size:12px; color:var(--text-2);">6월 사료 가격 인하 안내</td>
+                    </tr>
+                    <tr>
+                      <td class="font-mono" style="font-size:11px;">06/05 10:00</td>
+                      <td><span class="tag tag-blue">12건</span></td>
+                      <td style="font-size:12px; color:var(--text-2);">이번 주 난가 안내</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 질병 정보 -->
+      <div id="page-disease" class="page">
+        <div class="two-col">
+          <div>
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-header">
+                <span class="card-title">🚨 현재 주요 질병 경보</span>
+                <button class="btn btn-sm btn-danger" onclick="openModal('disease-modal')">＋ 경보 등록</button>
+              </div>
+              <div class="card-body">
+                <div class="alert-item danger">
+                  <div class="alert-icon">🦅</div>
+                  <div class="alert-content">
+                    <h4>고병원성 AI (H5N1) — 경계 단계</h4>
+                    <p>경기 포천시 인근 오리 농가에서 발생. 반경 10km 이동제한. 농장 출입 차량 소독 철저 요망.</p>
+                    <div class="alert-date">2025-06-06 발령 | 출처: 농림축산식품부</div>
+                  </div>
+                </div>
+                <div class="alert-item warning">
+                  <div class="alert-icon">🦠</div>
+                  <div class="alert-content">
+                    <h4>뉴캐슬병(ND) — 주의</h4>
+                    <p>충남 지역 산란계 농가 ND 발생 사례 증가. 예방접종 여부 확인 및 계사 소독 강화 권고.</p>
+                    <div class="alert-date">2025-06-03 발령 | 출처: 가축위생방역지원본부</div>
+                  </div>
+                </div>
+                <div class="alert-item info">
+                  <div class="alert-icon">🌿</div>
+                  <div class="alert-content">
+                    <h4>마렉병(MD) 예방 안내</h4>
+                    <p>신규 입추 농가 대상 마렉병 예방접종 필수 시행. 1일령 접종 권장.</p>
+                    <div class="alert-date">2025-05-28 | 정기 안내</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">📋 주요 산란계 질병 정보</span>
+              </div>
+              <div class="card-body" style="padding:0;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>질병명</th>
+                      <th>위험도</th>
+                      <th>주요 증상</th>
+                      <th>예방</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><b>조류인플루엔자 (AI)</b></td>
+                      <td><span class="tag tag-red">매우높음</span></td>
+                      <td style="font-size:12px;">급격한 폐사, 산란 저하</td>
+                      <td style="font-size:12px;">방역, 이동제한</td>
+                    </tr>
+                    <tr>
+                      <td><b>뉴캐슬병 (ND)</b></td>
+                      <td><span class="tag tag-red">높음</span></td>
+                      <td style="font-size:12px;">호흡기증상, 산란저하</td>
+                      <td style="font-size:12px;">예방접종</td>
+                    </tr>
+                    <tr>
+                      <td><b>계두</b></td>
+                      <td><span class="tag tag-orange">중간</span></td>
+                      <td style="font-size:12px;">피부 병변, 산란 감소</td>
+                      <td style="font-size:12px;">예방접종</td>
+                    </tr>
+                    <tr>
+                      <td><b>살모넬라</b></td>
+                      <td><span class="tag tag-orange">중간</span></td>
+                      <td style="font-size:12px;">설사, 폐사</td>
+                      <td style="font-size:12px;">위생관리</td>
+                    </tr>
+                    <tr>
+                      <td><b>마렉병 (MD)</b></td>
+                      <td><span class="tag tag-blue">낮음</span></td>
+                      <td style="font-size:12px;">마비, 종양</td>
+                      <td style="font-size:12px;">입추시 접종</td>
+                    </tr>
+                    <tr>
+                      <td><b>전염성기관지염 (IB)</b></td>
+                      <td><span class="tag tag-orange">중간</span></td>
+                      <td style="font-size:12px;">기침, 난질 저하</td>
+                      <td style="font-size:12px;">예방접종</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <!-- 농장별 방역 현황 -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">🛡️ 농장별 방역 현황</span>
+              </div>
+              <div class="card-body" style="padding:0; max-height:520px; overflow-y:auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>농장명</th>
+                      <th>최근 소독</th>
+                      <th>예방접종</th>
+                      <th>방역 등급</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><b>청계 농장</b></td>
+                      <td class="font-mono" style="font-size:11px;">06/05</td>
+                      <td><span class="tag tag-green">완료</span></td>
+                      <td><span class="tag tag-green">A</span></td>
+                    </tr>
+                    <tr>
+                      <td><b>삼성 농장</b></td>
+                      <td class="font-mono" style="font-size:11px;">06/01</td>
+                      <td><span class="tag tag-green">완료</span></td>
+                      <td><span class="tag tag-green">A</span></td>
+                    </tr>
+                    <tr>
+                      <td><b>하늘 농장</b></td>
+                      <td class="font-mono" style="font-size:11px;">05/25</td>
+                      <td><span class="tag tag-orange">일부완료</span></td>
+                      <td><span class="tag tag-orange">B</span></td>
+                    </tr>
+                    <tr>
+                      <td><b>대광 농장</b></td>
+                      <td class="font-mono" style="font-size:11px;">05/20</td>
+                      <td><span class="tag tag-red">미완료</span></td>
+                      <td><span class="tag tag-red">C</span></td>
+                    </tr>
+                    <tr>
+                      <td><b>동양 농장</b></td>
+                      <td class="font-mono" style="font-size:11px;">06/07</td>
+                      <td><span class="tag tag-green">완료</span></td>
+                      <td><span class="tag tag-green">A</span></td>
+                    </tr>
+                    <tr>
+                      <td><b>미래 농장</b></td>
+                      <td class="font-mono" style="font-size:11px;">06/03</td>
+                      <td><span class="tag tag-green">완료</span></td>
+                      <td><span class="tag tag-blue">B+</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 기타 메모 -->
+      <div id="page-memo" class="page">
+        <div class="two-col">
+          <div>
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-header">
+                <span class="card-title">✏️ 메모 작성</span>
+              </div>
+              <div class="card-body">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>관련 농장</label>
+                    <select id="memo-farm">
+                      <option value="">— 전체/공통 —</option>
+                      <option>청계 농장</option>
+                      <option>삼성 농장</option>
+                      <option>하늘 농장</option>
+                      <option>대광 농장</option>
+                      <option>동양 농장</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>분류</label>
+                    <select id="memo-type">
+                      <option>방문 기록</option>
+                      <option>클레임 접수</option>
+                      <option>영업 특이사항</option>
+                      <option>농장 상태</option>
+                      <option>기타</option>
+                    </select>
+                  </div>
+                  <div class="form-group full">
+                    <label>메모 제목</label>
+                    <input type="text" id="memo-title" placeholder="제목을 입력하세요">
+                  </div>
+                  <div class="form-group full">
+                    <label>내용</label>
+                    <textarea id="memo-content" rows="5" placeholder="상세 내용을 입력하세요..."></textarea>
+                  </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="addMemo()">💾 메모 저장</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 메모 목록 -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📋 메모 목록</span>
+              <select style="width:130px; font-size:12px;" id="memo-filter" onchange="filterMemos()">
+                <option value="">전체 분류</option>
+                <option value="방문 기록">방문 기록</option>
+                <option value="클레임 접수">클레임 접수</option>
+                <option value="영업 특이사항">영업 특이사항</option>
+              </select>
+            </div>
+            <div class="card-body" style="padding:0; max-height:540px; overflow-y:auto;" id="memo-list">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+<!-- Modal: 농장 추가 -->
+<div class="modal-overlay" id="farm-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🏡 농장 정보 등록</span>
+      <button class="modal-close" onclick="closeModal('farm-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>농장명 *</label>
+          <input type="text" id="f-name" placeholder="예: 청계 농장">
+        </div>
+        <div class="form-group">
+          <label>대표자명 *</label>
+          <input type="text" id="f-owner" placeholder="홍길동">
+        </div>
+        <div class="form-group">
+          <label>연락처 *</label>
+          <input type="text" id="f-phone" placeholder="010-0000-0000">
+        </div>
+        <div class="form-group">
+          <label>지역</label>
+          <select id="f-region">
+            <option>경기</option>
+            <option>충남</option>
+            <option>충북</option>
+            <option>경북</option>
+            <option>전남</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>주소</label>
+          <input type="text" id="f-addr" placeholder="경기도 포천시...">
+        </div>
+        <div class="form-group">
+          <label>사육 두수</label>
+          <input type="number" id="f-count" placeholder="50000">
+        </div>
+        <div class="form-group">
+          <label>계사 동수</label>
+          <input type="number" id="f-barn" placeholder="3">
+        </div>
+        <div class="form-group">
+          <label>주요 사료</label>
+          <select id="f-feed">
+            <option>초기산란</option>
+            <option>산란피크</option>
+            <option>후기산란</option>
+            <option>혼합</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>월 소비량 (톤)</label>
+          <input type="number" id="f-monthly" placeholder="15">
+        </div>
+        <div class="form-group full">
+          <label>특이사항</label>
+          <textarea id="f-note" rows="3" placeholder="계약 조건, 특이사항 등..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('farm-modal')">취소</button>
+      <button class="btn btn-primary" onclick="addFarm()">농장 등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 사료 단가 조정 -->
+<div class="modal-overlay" id="price-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">💰 계약 단가 조정</span>
+      <button class="modal-close" onclick="closeModal('price-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>농장 선택</label>
+          <select>
+            <option>청계 농장</option>
+            <option>삼성 농장</option>
+            <option>하늘 농장</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>사료 종류</label>
+          <select>
+            <option>초기산란</option>
+            <option>산란피크</option>
+            <option>후기산란</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>조정 단가 (원/kg)</label>
+          <input type="number" placeholder="420">
+        </div>
+        <div class="form-group">
+          <label>적용 기간</label>
+          <input type="month">
+        </div>
+        <div class="form-group full">
+          <label>조정 사유</label>
+          <textarea rows="3" placeholder="단가 조정 사유를 입력하세요..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('price-modal')">취소</button>
+      <button class="btn btn-primary" onclick="closeModal('price-modal')">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 질병 경보 등록 -->
+<div class="modal-overlay" id="disease-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🦠 질병 경보 등록</span>
+      <button class="modal-close" onclick="closeModal('disease-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>질병명</label>
+          <input type="text" placeholder="조류인플루엔자 등">
+        </div>
+        <div class="form-group">
+          <label>경보 단계</label>
+          <select>
+            <option>관심</option>
+            <option>주의</option>
+            <option>경계</option>
+            <option>심각</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>발생 지역</label>
+          <input type="text" placeholder="경기 포천시">
+        </div>
+        <div class="form-group">
+          <label>발령일</label>
+          <input type="date">
+        </div>
+        <div class="form-group full">
+          <label>상세 내용</label>
+          <textarea rows="4" placeholder="발생 현황 및 대응 방법..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>출처</label>
+          <input type="text" placeholder="농림축산식품부, 가축위생방역지원본부 등">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('disease-modal')">취소</button>
+      <button class="btn btn-danger" onclick="closeModal('disease-modal')">경보 등록</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== 데이터 ==========
+let farms = [
+  { id:1, name:'청계 농장', owner:'김철수', phone:'010-1234-5678', region:'경기', addr:'경기도 포천시 소흘읍', count:80000, barn:4, feed:'산란피크', monthly:18, note:'장기 우수 거래처. 연간 계약.' },
+  { id:2, name:'삼성 농장', owner:'박영희', phone:'010-2345-6789', region:'경기', addr:'경기도 연천군 전곡읍', count:60000, barn:3, feed:'초기산란', monthly:14, note:'계약 갱신 9월 예정. 경쟁사 접촉 있음.' },
+  { id:3, name:'하늘 농장', owner:'이순신', phone:'010-3456-7890', region:'충남', addr:'충남 홍성군 홍성읍', count:45000, barn:2, feed:'후기산란', monthly:10, note:'클레임 이력 있음. 품질 모니터링 필요.' },
+  { id:4, name:'대광 농장', owner:'정감찬', phone:'010-4567-8901', region:'충북', addr:'충북 음성군 대소면', count:30000, barn:2, feed:'산란피크', monthly:7, note:'소량 거래. 단가 민감.' },
+  { id:5, name:'동양 농장', owner:'강세종', phone:'010-5678-9012', region:'경기', addr:'경기도 양주시 백석읍', count:55000, barn:3, feed:'혼합', monthly:12, note:'신규 계약 1년차. 관계 강화 중.' },
+  { id:6, name:'미래 농장', owner:'오세영', phone:'010-6789-0123', region:'경기', addr:'경기도 가평군 청평면', count:70000, barn:4, feed:'산란피크', monthly:16, note:'방역 의식 높음. 모범 농가.' },
+];
+
+let memos = [
+  { date:'2025-06-07', farm:'하늘 농장', type:'클레임 접수', title:'6월 납품 사료 이물질 클레임', content:'6월 5일 납품분에서 이물질 발견 주장. 품질팀 조사 요청. 농장주 불만 높음.' },
+  { date:'2025-06-06', farm:'삼성 농장', type:'방문 기록', title:'계약 갱신 사전 미팅', content:'9월 만료 계약 조기 갱신 타진. 경쟁사 B사 접촉 있음 확인. 다음 방문시 특별 혜택 제안 필요.' },
+  { date:'2025-06-05', farm:'청계 농장', type:'방문 기록', title:'정기 방문 — 상태 양호', content:'산란율 94% 양호. 사료 잔여 약 2톤. 다음 납품 6/10 예정.' },
+  { date:'2025-06-03', farm:'', type:'영업 특이사항', title:'6월 사료 원료 가격 동향', content:'옥수수 선물가격 상승세. 7월 사료가격 인상 가능성 있음. 농가 사전 안내 준비 필요.' },
+];
+
+let feedPrices = [
+  { name:'초기산란 (S-1)', spec:'20kg', price:425, change:0 },
+  { name:'산란피크 (S-2)', spec:'20kg', price:425, change:0 },
+  { name:'후기산란 (S-3)', spec:'20kg', price:415, change:-5 },
+  { name:'영양강화 (S-4)', spec:'20kg', price:445, change:+10 },
+  { name:'유기농 산란 (O-1)', spec:'20kg', price:580, change:0 },
+];
+
+let feedHistory = [
+  { date:'2025-06-01', text:'S-4 영양강화 +10원 인상 (원료 대두박 상승)' },
+  { date:'2025-05-01', text:'S-3 후기산란 -5원 인하 (시즌 할인)' },
+  { date:'2025-04-01', text:'전 품목 동결' },
+  { date:'2025-03-01', text:'S-1, S-2 +15원 인상 (옥수수 가격 상승)' },
+  { date:'2025-01-01', text:'신년 가격표 적용' },
+];
+
+// ========== 네비게이션 ==========
+const pageTitles = {
+  dashboard: ['대시보드', '전체 농장 현황 및 주요 알림'],
+  farms:     ['농장 관리', '거래 농장 목록 및 상세 정보'],
+  feed:      ['사료 가격 관리', '제품별 단가 및 농장별 계약 가격'],
+  egg:       ['난가 정보', '주간 난가 현황 및 이력'],
+  sms:       ['문자 발송', '농장주 대상 정보 문자 발송'],
+  disease:   ['질병 정보', '산란계 주요 질병 현황 및 방역'],
+  memo:      ['기타 메모', '농장 방문 기록 및 영업 메모'],
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const items = document.querySelectorAll('.nav-item');
+  items.forEach(item => {
+    if (item.getAttribute('onclick') && item.getAttribute('onclick').includes("'" + id + "'")) {
+      item.classList.add('active');
+    }
+  });
+  document.getElementById('page-title').textContent = pageTitles[id][0];
+  document.getElementById('page-desc').textContent = pageTitles[id][1];
+  if (id === 'farms') renderFarms(farms);
+  if (id === 'sms') renderSmsFarmList();
+  if (id === 'memo') renderMemos();
+  if (id === 'feed') renderFeedPage();
+}
+
+// ========== 날짜 ==========
+function setDate() {
+  const now = new Date();
+  const d = now.toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', weekday:'short' });
+  document.getElementById('today-date').textContent = d;
+  const dateInputs = document.querySelectorAll('input[type=date]');
+  const today = now.toISOString().slice(0, 10);
+  dateInputs.forEach(i => { if (!i.value) i.value = today; });
+}
+
+// ========== 달걀 차트 ==========
+function drawEggChart() {
+  const prices = [1040, 1060, 1070, 1080, 1120];
+  const max = Math.max(...prices);
+  const min = Math.min(...prices) - 20;
+  const chart = document.getElementById('egg-chart');
+  if (!chart) return;
+  chart.innerHTML = '';
+  const labels = ['5/12', '5/19', '5/26', '6/02', '6/08'];
+  prices.forEach((p, i) => {
+    const h = Math.round(((p - min) / (max - min + 20)) * 130) + 20;
+    const group = document.createElement('div');
+    group.className = 'price-bar-group';
+    group.innerHTML = `<div class="price-bar" style="height:${h}px;"><div class="price-tooltip">${p.toLocaleString()}원</div></div>`;
+    chart.appendChild(group);
+  });
+}
+
+// ========== 농장 목록 ==========
+function renderFarms(list) {
+  const el = document.getElementById('farm-list');
+  if (!el) return;
+  el.innerHTML = '';
+  list.forEach(f => {
+    el.innerHTML += `
+      <div class="farm-card">
+        <div class="flex-between" style="margin-bottom:8px;">
+          <div class="farm-card-name">🏡 ${f.name}</div>
+          <span class="tag tag-gray">${f.region}</span>
+        </div>
+        <div class="farm-card-meta">
+          <div class="farm-meta-row"><span>대표자</span><span>${f.owner}</span></div>
+          <div class="farm-meta-row"><span>연락처</span><span class="font-mono" style="font-size:12px;">${f.phone}</span></div>
+          <div class="farm-meta-row"><span>사육 두수</span><span>${f.count.toLocaleString()}수</span></div>
+          <div class="farm-meta-row"><span>계사</span><span>${f.barn}동</span></div>
+          <div class="farm-meta-row"><span>주요 사료</span><span>${f.feed}</span></div>
+          <div class="farm-meta-row"><span>월 소비</span><span>${f.monthly}톤</span></div>
+        </div>
+        ${f.note ? `<div style="margin-top:10px; font-size:11px; color:var(--text-3); padding-top:10px; border-top:1px solid var(--border);">💬 ${f.note}</div>` : ''}
+        <div style="margin-top:10px; display:flex; gap:6px;">
+          <button class="btn btn-sm" style="flex:1;" onclick="callFarm('${f.phone}')">📞 전화</button>
+          <button class="btn btn-sm" style="flex:1;" onclick="smsToFarm('${f.name}')">💬 문자</button>
+        </div>
+      </div>`;
+  });
+}
+
+function filterFarms(q) {
+  const filtered = farms.filter(f =>
+    f.name.includes(q) || f.owner.includes(q) || f.region.includes(q) || f.addr.includes(q)
+  );
+  renderFarms(filtered);
+}
+
+function callFarm(phone) {
+  alert(`📞 ${phone} 에 전화를 겁니다.\n(실제 환경에서는 전화 앱 연동)`);
+}
+
+function smsToFarm(name) {
+  showPage('sms');
+  setTimeout(() => {
+    document.getElementById('sms-content').value = `[사료회사 알림]\n${name} 농장주님, 안녕하세요.\n영업담당 홍길동입니다.\n\n`;
+    updateSmsPreview();
+  }, 100);
+}
+
+function addFarm() {
+  const name = document.getElementById('f-name').value.trim();
+  const owner = document.getElementById('f-owner').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  if (!name || !owner || !phone) { alert('필수 항목을 입력하세요.'); return; }
+  const f = {
+    id: Date.now(),
+    name, owner, phone,
+    region: document.getElementById('f-region').value,
+    addr: document.getElementById('f-addr').value,
+    count: parseInt(document.getElementById('f-count').value) || 0,
+    barn: parseInt(document.getElementById('f-barn').value) || 1,
+    feed: document.getElementById('f-feed').value,
+    monthly: parseFloat(document.getElementById('f-monthly').value) || 0,
+    note: document.getElementById('f-note').value,
+  };
+  farms.push(f);
+  closeModal('farm-modal');
+  ['f-name','f-owner','f-phone','f-addr','f-count','f-barn','f-monthly','f-note'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  showPage('farms');
+}
+
+// ========== 사료 페이지 ==========
+function renderFeedPage() {
+  const tbody = document.getElementById('feed-price-table');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  feedPrices.forEach(f => {
+    const changeHtml = f.change > 0
+      ? `<span class="tag tag-blue">▲+${f.change}</span>`
+      : f.change < 0
+      ? `<span class="tag tag-orange">▼${f.change}</span>`
+      : `<span class="tag tag-gray">±0</span>`;
+    tbody.innerHTML += `
+      <tr>
+        <td><b>${f.name}</b></td>
+        <td>${f.spec}</td>
+        <td style="text-align:right;" class="font-mono">${f.price}원</td>
+        <td style="text-align:right;">${changeHtml}</td>
+      </tr>`;
+  });
+  const tl = document.getElementById('feed-timeline');
+  if (!tl) return;
+  tl.innerHTML = '';
+  feedHistory.forEach(h => {
+    tl.innerHTML += `
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-date">${h.date}</div>
+        <div class="timeline-text">${h.text}</div>
+      </div>`;
+  });
+}
+
+// ========== SMS ==========
+function renderSmsFarmList() {
+  const el = document.getElementById('sms-farm-list');
+  if (!el) return;
+  el.innerHTML = '';
+  farms.forEach(f => {
+    el.innerHTML += `
+      <label style="display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--border); border-radius:6px; cursor:pointer; background:var(--surface);">
+        <input type="checkbox" name="sms-farm" value="${f.id}" checked style="width:auto; accent-color:var(--accent);">
+        <span style="font-weight:500; font-size:13px;">${f.name}</span>
+        <span style="color:var(--text-3); font-size:12px; margin-left:auto;">${f.owner} · ${f.phone}</span>
+      </label>`;
+  });
+}
+
+function selectAllFarms(v) {
+  document.querySelectorAll('input[name=sms-farm]').forEach(cb => cb.checked = v);
+}
+
+const smsTemplates = {
+  egg: `[사료회사 난가 안내]\n안녕하세요. 이번 주 난가를 안내드립니다.\n\n▸ 왕란: 1,280원\n▸ 특란: 1,120원\n▸ 대란: 1,040원\n▸ 중란: 920원\n\n문의: 010-1234-5678\n영업담당 홍길동`,
+  feed: `[사료 가격 안내]\n안녕하세요. 6월 사료 가격을 안내드립니다.\n\n▸ 초기산란: 425원/kg\n▸ 산란피크: 425원/kg\n▸ 후기산란: 415원/kg\n\n영업담당 홍길동 (010-1234-5678)`,
+  disease: `[긴급 방역 안내]\n경기 북부 AI(조류인플루엔자) 발생으로 방역 강화를 요청드립니다.\n\n▸ 차량 소독 철저\n▸ 외부인 출입 통제\n▸ 이상 개체 즉시 신고\n\n문의: 010-1234-5678`,
+  visit: `[방문 일정 안내]\n안녕하세요. 이번 주 방문 예정을 안내드립니다.\n방문일: 6월 10일(화) 오전 10시\n목적: 사료 납품 및 정기 점검\n\n영업담당 홍길동`,
+  weather: `[고온 주의 안내]\n이번 주 최고기온 34°C 이상 예보입니다.\n\n▸ 음수량 증가 확인\n▸ 환기 시설 점검\n▸ 사료 섭취량 모니터링\n\n문의사항은 연락주세요.\n홍길동 010-1234-5678`,
+};
+
+function loadSmsTemplate(v) {
+  if (!v) return;
+  document.getElementById('sms-content').value = smsTemplates[v] || '';
+  updateSmsPreview();
+}
+
+function updateSmsPreview() {
+  const txt = document.getElementById('sms-content').value;
+  document.getElementById('sms-preview-text').textContent = txt || '여기에 미리보기가 표시됩니다.';
+  const cc = document.getElementById('sms-char-count');
+  if (cc) cc.textContent = txt.length;
+}
+
+function sendSMS() {
+  const checked = document.querySelectorAll('input[name=sms-farm]:checked');
+  const txt = document.getElementById('sms-content').value.trim();
+  if (checked.length === 0) { alert('수신 농장을 선택하세요.'); return; }
+  if (!txt) { alert('문자 내용을 입력하세요.'); return; }
+  const now = new Date();
+  const timeStr = `${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const tbody = document.getElementById('sms-history');
+  const preview = txt.length > 20 ? txt.slice(0,20) + '...' : txt;
+  if (tbody) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="font-mono" style="font-size:11px;">${timeStr}</td><td><span class="tag tag-blue">${checked.length}건</span></td><td style="font-size:12px; color:var(--text-2);">${preview.replace(/\n/g,' ')}</td>`;
+    tbody.insertBefore(tr, tbody.firstChild);
+  }
+  alert(`✅ ${checked.length}개 농장에 문자 발송이 완료되었습니다.`);
+  document.getElementById('sms-content').value = '';
+  updateSmsPreview();
+}
+
+function sendEggSMS() {
+  showPage('sms');
+  setTimeout(() => {
+    loadSmsTemplate('egg');
+  }, 100);
+}
+
+// ========== 메모 ==========
+function addMemo() {
+  const title = document.getElementById('memo-title').value.trim();
+  const content = document.getElementById('memo-content').value.trim();
+  if (!title) { alert('제목을 입력하세요.'); return; }
+  const m = {
+    date: new Date().toISOString().slice(0,10),
+    farm: document.getElementById('memo-farm').value,
+    type: document.getElementById('memo-type').value,
+    title, content,
+  };
+  memos.unshift(m);
+  document.getElementById('memo-title').value = '';
+  document.getElementById('memo-content').value = '';
+  renderMemos();
+}
+
+function renderMemos(filter) {
+  const el = document.getElementById('memo-list');
+  if (!el) return;
+  const f = filter || document.getElementById('memo-filter')?.value || '';
+  const list = f ? memos.filter(m => m.type === f) : memos;
+  if (list.length === 0) {
+    el.innerHTML = '<div style="padding:24px; text-align:center; color:var(--text-3);">메모가 없습니다.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  const typeColors = {
+    '방문 기록': 'tag-blue',
+    '클레임 접수': 'tag-red',
+    '영업 특이사항': 'tag-orange',
+    '농장 상태': 'tag-green',
+    '기타': 'tag-gray',
+  };
+  list.forEach((m, i) => {
+    el.innerHTML += `
+      <div style="padding:14px 16px; border-bottom:1px solid var(--border);">
+        <div class="flex-between" style="margin-bottom:6px; gap:8px; flex-wrap:wrap;">
+          <b style="font-size:13px;">${m.title}</b>
+          <span class="tag ${typeColors[m.type] || 'tag-gray'}">${m.type}</span>
+        </div>
+        <div style="font-size:12px; color:var(--text-2); margin-bottom:6px; line-height:1.6;">${m.content}</div>
+        <div style="font-size:11px; color:var(--text-3);">
+          📅 ${m.date} ${m.farm ? `&nbsp;|&nbsp; 🏡 ${m.farm}` : ''}
+        </div>
+      </div>`;
+  });
+}
+
+function filterMemos() {
+  renderMemos(document.getElementById('memo-filter').value);
+}
+
+// ========== 모달 ==========
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => {
+    if (e.target === o) o.classList.remove('open');
+  });
+});
+
+// ========== 초기화 ==========
+window.addEventListener('DOMContentLoaded', () => {
+  setDate();
+  drawEggChart();
+  renderMemos();
+});
+</script>
+</body>
+</html>
