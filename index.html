@@ -560,7 +560,7 @@
       </div>
     </div>
     <div class="sidebar-footer">
-      영업담당: 홍길동 사원<br>
+      영업담당: 최동명 사원<br>
       경기북부 담당구역
     </div>
   </nav>
@@ -1036,7 +1036,7 @@
               </div>
               <div class="card-body">
                 <div class="sms-bubble-wrap">
-                  <div class="sms-sender">사료회사 홍길동</div>
+                  <div class="sms-sender">사료회사 최동명</div>
                   <div class="sms-bubble">
                     <div id="sms-preview-text" style="white-space:pre-wrap; color:var(--text);">여기에 미리보기가 표시됩니다.</div>
                   </div>
@@ -1318,7 +1318,7 @@
         </div>
         <div class="form-group">
           <label>대표자명 *</label>
-          <input type="text" id="f-owner" placeholder="홍길동">
+          <input type="text" id="f-owner" placeholder="최동명">
         </div>
         <div class="form-group">
           <label>연락처 *</label>
@@ -1599,7 +1599,7 @@ function callFarm(phone) {
 function smsToFarm(name) {
   showPage('sms');
   setTimeout(() => {
-    document.getElementById('sms-content').value = `[사료회사 알림]\n${name} 농장주님, 안녕하세요.\n영업담당 홍길동입니다.\n\n`;
+    document.getElementById('sms-content').value = `[사료회사 알림]\n${name} 농장주님, 안녕하세요.\n영업담당 최동명입니다.\n\n`;
     updateSmsPreview();
   }, 100);
 }
@@ -1680,11 +1680,11 @@ function selectAllFarms(v) {
 }
 
 const smsTemplates = {
-  egg: `[사료회사 난가 안내]\n안녕하세요. 이번 주 난가를 안내드립니다.\n\n▸ 왕란: 1,280원\n▸ 특란: 1,120원\n▸ 대란: 1,040원\n▸ 중란: 920원\n\n문의: 010-1234-5678\n영업담당 홍길동`,
-  feed: `[사료 가격 안내]\n안녕하세요. 6월 사료 가격을 안내드립니다.\n\n▸ 초기산란: 425원/kg\n▸ 산란피크: 425원/kg\n▸ 후기산란: 415원/kg\n\n영업담당 홍길동 (010-1234-5678)`,
+  egg: `[사료회사 난가 안내]\n안녕하세요. 이번 주 난가를 안내드립니다.\n\n▸ 왕란: 1,280원\n▸ 특란: 1,120원\n▸ 대란: 1,040원\n▸ 중란: 920원\n\n문의: 010-1234-5678\n영업담당 최동명`,
+  feed: `[사료 가격 안내]\n안녕하세요. 6월 사료 가격을 안내드립니다.\n\n▸ 초기산란: 425원/kg\n▸ 산란피크: 425원/kg\n▸ 후기산란: 415원/kg\n\n영업담당 최동명 (010-1234-5678)`,
   disease: `[긴급 방역 안내]\n경기 북부 AI(조류인플루엔자) 발생으로 방역 강화를 요청드립니다.\n\n▸ 차량 소독 철저\n▸ 외부인 출입 통제\n▸ 이상 개체 즉시 신고\n\n문의: 010-1234-5678`,
-  visit: `[방문 일정 안내]\n안녕하세요. 이번 주 방문 예정을 안내드립니다.\n방문일: 6월 10일(화) 오전 10시\n목적: 사료 납품 및 정기 점검\n\n영업담당 홍길동`,
-  weather: `[고온 주의 안내]\n이번 주 최고기온 34°C 이상 예보입니다.\n\n▸ 음수량 증가 확인\n▸ 환기 시설 점검\n▸ 사료 섭취량 모니터링\n\n문의사항은 연락주세요.\n홍길동 010-1234-5678`,
+  visit: `[방문 일정 안내]\n안녕하세요. 이번 주 방문 예정을 안내드립니다.\n방문일: 6월 10일(화) 오전 10시\n목적: 사료 납품 및 정기 점검\n\n영업담당 최동명`,
+  weather: `[고온 주의 안내]\n이번 주 최고기온 34°C 이상 예보입니다.\n\n▸ 음수량 증가 확인\n▸ 환기 시설 점검\n▸ 사료 섭취량 모니터링\n\n문의사항은 연락주세요.\n최동명 010-1234-5678`,
 };
 
 function loadSmsTemplate(v) {
